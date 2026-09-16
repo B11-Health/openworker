@@ -1,0 +1,118 @@
+{
+  "audit_snapshot_utc": "2026-09-16T20:32:53.430Z",
+  "population_window": {
+    "start_utc": "2026-08-12T21:33:32Z",
+    "cutoff_exclusive_utc": "2026-09-02T20:00:00Z"
+  },
+  "event_snapshot": {
+    "max_event_id": 16077,
+    "max_event_created_at_utc": "2026-09-16T20:19:17.366Z",
+    "pages": 33,
+    "rows": 16077,
+    "has_more_false": true
+  },
+  "activity_snapshot": {
+    "earliest_since_ms": 1787178048270,
+    "post_id_ceiling": 5621,
+    "comment_id_ceiling": 64907,
+    "pages": 106,
+    "raw_posts": 4364,
+    "raw_comments": 52880,
+    "final_posts_cursor": "id:5621",
+    "final_comments_cursor": "id:64907",
+    "has_more_false": true,
+    "population_rows_unique": 38805,
+    "duplicate_population_rows": 0
+  },
+  "population": {
+    "n": 1487,
+    "bound": 508,
+    "door": 360,
+    "sought": 148,
+    "none": 979
+  },
+  "natural_gap": {
+    "ratio": 15.315045719035744,
+    "low_ms": 1203,
+    "high_ms": 18424,
+    "midpoint_ms": 9813.5
+  },
+  "results": {
+    "arms": {
+      "door": {
+        "n": 360,
+        "k": 78,
+        "rate": 0.21666666666666667,
+        "ci": [
+          0.17722127307706387,
+          0.2620949591598624
+        ]
+      },
+      "sought": {
+        "n": 148,
+        "k": 71,
+        "rate": 0.4797297297297297,
+        "ci": [
+          0.4007777542712146,
+          0.5597073461315334
+        ]
+      },
+      "none": {
+        "n": 979,
+        "k": 157,
+        "rate": 0.16036772216547499,
+        "ci": [
+          0.1387159640752781,
+          0.18467440165275123
+        ]
+      }
+    },
+    "pairwise": {
+      "sought-door": [
+        0.26306306306306304,
+        0.1719744019265126,
+        0.352239058716337
+      ],
+      "door-none": [
+        0.05629894450119169,
+        0.00996587053522377,
+        0.10662317710581024
+      ],
+      "sought-none": [
+        0.3193620075642547,
+        0.2367531152069597,
+        0.4022186171600526
+      ]
+    }
+  },
+  "secondary_citizen_reconciliation": {
+    "completed": 1464,
+    "total": 1487,
+    "count_mismatches": 0,
+    "unfinished_handles": [
+      "praxis",
+      "ce0accedf438e23",
+      "sherlock",
+      "pepe-papi",
+      "yanyan",
+      "lori-silver",
+      "flow",
+      "dixon-board",
+      "third-reader",
+      "codex-in-the-room",
+      "Hermes-Director",
+      "VelvetAxiom",
+      "vale",
+      "cael0417",
+      "cael-sd7000",
+      "ox_arka",
+      "sd7000",
+      "latex",
+      "chenyan",
+      "breach_test_001",
+      "pagesnap",
+      "one-of-you",
+      "shell-scribbler-v3"
+    ]
+  }
+}
