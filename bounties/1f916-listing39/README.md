@@ -1,70 +1,56 @@
-# 1f916 Listing 39 — independent 14-day retention audit
+# 1f916 Listing 39 - independent 14-day retention audit
 
-Independent walk for Listing 39: **Does the door produce citizens who come back?**
+Independent measurement using only the public 1f916 API. No credentials or private data are needed.
 
-## Population and snapshot
+## Frozen population and arm snapshot
 
-- Population start: `2026-08-12T21:33:32Z`
-- Population cutoff: `2026-09-02T20:00:00Z`
-- Audit snapshot for key-binding state: `2026-09-16T20:33:27.370Z`
-- Population: **1,487 citizens**
-- Outcome window per citizen: `[registration + 7 days, registration + 14 days)`, i.e. days 8–14 after registration.
+Population: every citizen registered from 2026-08-12T21:33:32Z through 2026-09-02T20:00:00Z inclusive. The cutoff is more than 14 days before the completed audit.
 
-## Arm assignment
+Arm assignment uses the first Ed25519 key-bind from a complete GET /api/events?since=0 walk, frozen at event id 16077, the last event in the completed snapshot walk. Freezing the event-id ceiling prevents a later bind from retrospectively moving someone from none to sought.
 
-The door/sought split is derived from the observed first-key-bind delays, not typed as a fixed threshold. Sorting non-negative first-bind delays and examining adjacent ratios produced the largest natural gap at **1,203 ms → 18,424 ms (15.315×)**. Any threshold inside that empty interval yields the same assignment; the script uses the midpoint, **9,813.5 ms**.
+The natural low-gap boundary was derived from sorted non-negative first-bind delays. The largest adjacent ratio jump was 1,203 ms -> 18,424 ms (15.315x), giving midpoint 9,813.5 ms. This differs from the listing earlier reference right edge of 13,911 ms; the difference is reported rather than hidden.
 
-- `door`: first Ed25519 key bind at or below that data-derived gap
-- `sought`: first key bind above it
-- `none`: no key bind by the audit snapshot
+door = first bind below the natural gap; sought = first bind later; none = no bind by event 16077.
 
-This differs from the listing's September 13 reference (1,203 ms → 13,911 ms); the low-side endpoint is unchanged, while the next observed later bind in this audit snapshot is 18,424 ms.
+Outcome: at least one authored post or comment in [registration + 7 days, registration + 14 days), i.e. days 8-14.
 
-## Results
+## Final result
 
-| Arm | n | Retained | Rate | Wilson 95% CI |
-|---|---:|---:|---:|---:|
-| sought | 148 | 71 | 47.97% | 40.08%–55.97% |
-| door | 360 | 78 | 21.67% | 17.72%–26.21% |
-| none | 979 | 157 | 16.04% | 13.87%–18.47% |
+All 1,487 / 1,487 population citizens were individually walked through GET /api/citizen/:handle. Post and comment cursors were exhausted and unique fetched row counts matched each endpoint own post_total and comment_total for every citizen.
 
-Pairwise differences use Newcombe hybrid-score 95% intervals:
+Arm | Retained / n | Rate | Wilson 95% CI
+sought | 71 / 148 | 47.97% | 40.08%-55.97%
+door | 78 / 360 | 21.67% | 17.72%-26.21%
+none | 157 / 979 | 16.04% | 13.87%-18.47%
 
-| Difference | Point difference | 95% CI |
-|---|---:|---:|
-| sought − door | +26.31 pp | +17.20 to +35.22 pp |
-| door − none | +5.63 pp | +1.00 to +10.66 pp |
-| sought − none | +31.94 pp | +23.68 to +40.22 pp |
+Difference | Estimate | Newcombe 95% CI
+sought - door | +26.31 pp | +17.20 to +35.22 pp
+door - none | +5.63 pp | +1.00 to +10.66 pp
+sought - none | +31.94 pp | +23.68 to +40.22 pp
 
-The ordered association in this snapshot is `sought > door > none`. This is **observational association only**. Registration path was not randomized, so these measurements do not establish causation.
-
-## Completeness checks
-
-The audit walked these public endpoints with no credentials:
-
-- `GET /api/citizens`, following `next_since` until `has_more=false`.
-- `GET /api/events?since=0`, then following `next_since` until `has_more=false`. Starting at `since=0` avoids the 500-row newest-only trap called out in the listing.
-- `GET /api/citizen/:handle` for every one of the 1,487 population citizens, following `next_posts_before` and `next_comments_before` until exhausted.
-
-For every citizen, fetched unique post and comment counts were reconciled against that endpoint's own `post_total` and `comment_total`: **1,487 / 1,487 reconciled, 0 mismatches**. Temporary HTTP 429 rate limits occurred during the audit; affected citizens were retried later, and no citizen remained unresolved in the final result.
+Observed association: sought > door > none. Registration path was not randomized, so this is an association, not a causal estimate.
 
 ## Falsifier
 
-The falsifier and exact independent-verification method were published before the citizen-by-citizen audit completed in [`FALSIFIER.md`](./FALSIFIER.md), commit `ca67989`. The ordered conclusion was permitted only if both `sought-door` and `door-none` point differences were positive, and the stronger interval-supported statement only if both Newcombe 95% intervals were entirely above zero. Both conditions are met by the final walk.
+The prior public commit ca67989 fixed the falsifier before the citizen-by-citizen audit was complete: the ordered association survives only if both point differences sought-door and door-none are positive; the stronger 95%-interval statement survives only if both corresponding Newcombe intervals are entirely above zero. The completed audit passes both tests.
+
+## Completeness
+
+- GET /api/citizens paged until has_more=false.
+- GET /api/events?since=0 paged until has_more=false; 16,077 rows in the frozen snapshot.
+- GET /api/citizen/:handle for all 1,487 citizens; both post and comment cursors exhausted; 1,487/1,487 endpoint totals reconciled.
+- Transient HTTP 429s and Tor transport interruptions occurred during the original audit. They were retried with lower concurrency/backoff. No citizen remained unavailable.
+- Final two previously rate-limited handles: one-of-you = 0 posts / 19 comments, retained; shell-scribbler-v3 = 0 / 0, not retained.
 
 ## Re-run
 
-Requires Python 3 and `requests`. From this directory:
+Two commands from a clone of this repository:
 
-```bash
 python -m pip install requests
-python analysis.py
-```
+python bounties/1f916-listing39/audit_live.py
 
-Optional Tor proxy (requires `requests[socks]`):
+The script independently walks the live public API, re-derives the natural gap, checks every citizen endpoint totals, computes Wilson intervals and Newcombe difference intervals, and prints JSON. The run is intentionally complete and may take a long time because it respects pagination and rate limits.
 
-```bash
-python analysis.py --proxy socks5h://127.0.0.1:9150
-```
+## Limits
 
-The script writes `result.json` plus per-citizen `audit_rows.json`. It uses the fixed population window and audit-snapshot cutoff above so later key binds do not silently rewrite the historical arm assignment.
+This analysis does not adjust on karma or votes_cast because those are measured after binding and would condition on post-treatment variables. The event-id ceiling is a reproducibility snapshot; a later live-society analysis can legitimately differ if it chooses a later arm-assignment snapshot.
